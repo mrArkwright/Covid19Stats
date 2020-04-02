@@ -1,0 +1,10 @@
+.stack-work/
+*~
+/web/elm-stuff/
+/web/target/
+/out/
+/.idea/
+/Covid19Stats.cabal
+/stack.yaml.lock
+/target/
+/docker-host
