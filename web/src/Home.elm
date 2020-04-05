@@ -2,6 +2,7 @@ module Home exposing (..)
 
 import Html exposing (Html, Attribute, div, text, h1, input, label)
 import Html.Attributes exposing (class, value, type_, readonly, style)
+import Html.Attributes.Extra exposing (valueAsInt)
 import Html.Events exposing (onInput)
 import LineChart
 import LineChart.Dots as Dots
@@ -33,7 +34,7 @@ type alias State = {
 initialState : State
 initialState = {
     extrapolationDatum = Lib.fromJust <| Lib.atIndex germany 16,
-    extrapolationDays = -10,
+    extrapolationDays = 22,
     hinted = []
   }
 
@@ -99,7 +100,7 @@ form state = [
     div [class "form-group row"] [
       label [class "col-sm-4 col-md-3 col-lg-2 col-form-label"] [text "Extrapolation Days"],
       div [class "col-sm-3 col-md-2 col-xl-1"] [
-        input [class "text-right", type_ "text", class "form-control", value (String.fromInt state.extrapolationDays), onInput SetExtrapolationDays] []
+        input [class "text-right", type_ "number", class "form-control", valueAsInt state.extrapolationDays, onInput SetExtrapolationDays] []
       ]
     ]
   ]
@@ -213,8 +214,7 @@ germanyFitted extrapolationDatum extrapolationDays =
 
     value i = valueA * f ^ (toFloat i)
 
-    numberOfValues = List.length germany + extrapolationDays
-    indexes = List.range 0 (numberOfValues - 1)
+    indexes = List.range 0 extrapolationDays
   in
     List.map (\i -> {date = dateForIndex i, value = round <| value i}) indexes
 
