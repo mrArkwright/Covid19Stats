@@ -7,6 +7,7 @@ import Html.Attributes exposing (id, class, type_, attribute, href)
 import Url exposing (Url)
 import Url.Parser as Parser exposing (Parser, (</>), oneOf, top, s, parse)
 import Home
+import About
 
 
 main =
@@ -28,11 +29,18 @@ type alias State = {
   }
 
 type Route =
-  RouteHome Home.State
+  RouteHome Home.State |
+  RouteAbout
 
 isRouteHome : Route -> Bool
 isRouteHome route = case route of
   RouteHome _ -> True
+  _ -> False
+
+isRouteAbout : Route -> Bool
+isRouteAbout route = case route of
+  RouteAbout -> True
+  _ -> False
 
 
 -- UPDATE
@@ -45,7 +53,8 @@ type Message =
 routeParser : Parser ((Route, Cmd Message) -> a) a
 routeParser =
   oneOf [
-    Parser.map (RouteHome Home.initialState, Cmd.map HomeMessage Home.initialCmd) top
+    Parser.map (RouteHome Home.initialState, Cmd.map HomeMessage Home.initialCmd) top,
+    Parser.map (RouteAbout, Cmd.none) (s "about")
   ]
 
 init : () -> Url -> Navigation.Key -> (State, Cmd Message)
@@ -76,7 +85,7 @@ update message state =
       let (homeState1, command) = Home.update homeMessage homeState in
       ({state | route = RouteHome homeState1}, Cmd.map HomeMessage command)
 
-    --_ -> (state, Cmd.none)
+    _ -> (state, Cmd.none)
 
 
 -- VIEW
@@ -92,16 +101,16 @@ title state =
   let
     suffix = case state.route of
       RouteHome _ -> "Home"
+      RouteAbout -> "About"
   in
     "Covid-19 Stats – " ++ suffix
 
 body : State -> List (Html Message)
 body state = [
     navbar state,
-    Html.main_ [attribute "role" "main", class "container-fluid"] (
-      case state.route of
-        RouteHome homeState -> List.map (Html.map HomeMessage) (Home.view homeState)
-    )
+    case state.route of
+      RouteHome homeState -> Html.map HomeMessage (Home.view homeState)
+      RouteAbout -> About.view
   ]
 
 navbar : State -> Html Message
@@ -113,7 +122,8 @@ navbar model =
     ],
     div [class "collapse navbar-collapse", id "navbarSupportedContent"] [
       ul [class "navbar-nav mr-auto"] [
-        routeButton "/" isRouteHome "Home" model
+        routeButton "/" isRouteHome "Home" model,
+        routeButton "/about" isRouteAbout "About" model
       ]
     ]
   ]

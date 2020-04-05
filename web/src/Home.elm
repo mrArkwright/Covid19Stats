@@ -1,6 +1,6 @@
 module Home exposing (..)
 
-import Html exposing (Html, Attribute, div, text, h1, input, label)
+import Html exposing (Html, Attribute, div, text, h1, input, label, main_)
 import Html.Attributes exposing (class, value, type_, readonly, style)
 import Html.Attributes.Extra exposing (valueAsInt)
 import Html.Events exposing (onInput)
@@ -71,8 +71,8 @@ update message state = case message of
 
 -- VIEW
 
-view : State -> List (Html Message)
-view state = [
+view : State -> Html Message
+view state = main_ [class "container-fluid"] [
     div [class "row mt-4 mb-2"] [
       div [class "col"] [
         h1 [] [text "Deutschland"],
