@@ -2,10 +2,11 @@ module Main exposing (..)
 
 import Browser exposing (Document)
 import Browser.Navigation as Navigation
-import Html exposing (Html, Attribute, ul, li, button, div, text, span, nav, a, h1, p)
+import Html exposing (Html, Attribute, ul, li, button, div, text, span, nav, a)
 import Html.Attributes exposing (id, class, type_, attribute, href)
 import Url exposing (Url)
 import Url.Parser exposing (Parser, (</>), map, oneOf, s, parse)
+import Home
 
 
 main =
@@ -27,33 +28,34 @@ type alias State = {
   }
 
 type Route =
-  RouteHome
+  RouteHome Home.State
 
 isRouteHome : Route -> Bool
 isRouteHome route = case route of
-  RouteHome -> True
+  RouteHome _ -> True
 
 
 -- UPDATE
 
 type Message =
   UrlChange Url |
-  UrlRequest Browser.UrlRequest
+  UrlRequest Browser.UrlRequest |
+  HomeMessage Home.Message
 
 routeParser : Parser ((Route, Cmd Message) -> a) a
 routeParser =
   oneOf [
-    map (RouteHome, Cmd.none) (s "")
+    map (RouteHome Home.initialState, Cmd.map HomeMessage Home.initialCmd) (s "")
   ]
 
 init : () -> Url -> Navigation.Key -> (State, Cmd Message)
 init () url key = case parse routeParser url of
   Just (route, cmd) -> ({route = route, key = key}, cmd)
-  Nothing -> ({route = RouteHome, key = key}, Cmd.none)
+  Nothing -> ({route = RouteHome Home.initialState, key = key}, Cmd.map HomeMessage Home.initialCmd)
 
 update : Message -> State -> (State, Cmd Message)
-update msg state =
-  case (msg, state.route) of
+update message state =
+  case (message, state.route) of
     (UrlRequest urlRequest, _) ->
       case urlRequest of
         Browser.Internal url ->
@@ -70,6 +72,10 @@ update msg state =
           ({state | route = route}, cmd)
         Nothing -> (state, Cmd.none)
 
+    (HomeMessage homeMessage, RouteHome homeState) ->
+      let (homeState1, command) = Home.update homeMessage homeState in
+      ({state | route = RouteHome homeState1}, Cmd.map HomeMessage command)
+
     --_ -> (state, Cmd.none)
 
 
@@ -85,20 +91,17 @@ title : State -> String
 title state =
   let
     suffix = case state.route of
-      RouteHome -> "Home"
+      RouteHome _ -> "Home"
   in
     "Covid-19 Stats – " ++ suffix
 
 body : State -> List (Html Message)
-body model =
-  [
-    Html.main_ [attribute "role" "main"] [
-      navbar model,
-      div [class "jumbotron"] [
-        h1 [class "display-4"] [text "No content yet 🤷‍♂️"],
-        p [class "lead"] [text "coming soonish…"]
-      ]
-    ]
+body state = [
+    navbar state,
+    Html.main_ [attribute "role" "main", class "container-fluid"] (
+      case state.route of
+        RouteHome homeState -> List.map (Html.map HomeMessage) (Home.view homeState)
+    )
   ]
 
 navbar : State -> Html Message
