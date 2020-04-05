@@ -5,7 +5,7 @@ import Browser.Navigation as Navigation
 import Html exposing (Html, Attribute, ul, li, button, div, text, span, nav, a)
 import Html.Attributes exposing (id, class, type_, attribute, href)
 import Url exposing (Url)
-import Url.Parser exposing (Parser, (</>), map, oneOf, s, parse)
+import Url.Parser as Parser exposing (Parser, (</>), oneOf, top, s, parse)
 import Home
 
 
@@ -45,7 +45,7 @@ type Message =
 routeParser : Parser ((Route, Cmd Message) -> a) a
 routeParser =
   oneOf [
-    map (RouteHome Home.initialState, Cmd.map HomeMessage Home.initialCmd) (s "")
+    Parser.map (RouteHome Home.initialState, Cmd.map HomeMessage Home.initialCmd) top
   ]
 
 init : () -> Url -> Navigation.Key -> (State, Cmd Message)
